@@ -15,14 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 import logging
-from copy import deepcopy
-from typing import Any
 
-import numpy as np
-import pandas as pd
 from gemseo.scenarios.mdo_scenario import MDOScenario
-
-from sostrades_core.execution_engine.sos_discipline import SoSDiscipline
 
 
 class SoSMDOScenario(MDOScenario):
@@ -81,7 +75,6 @@ class SoSMDOScenario(MDOScenario):
         self.is_sos_coupling = False
         self.mdo_options = {}
 
-
     def _run(self):
         '''
 
@@ -135,7 +128,7 @@ class SoSMDOScenario(MDOScenario):
         Call to the GEMSEO MDOScenario run and update design_space_out
         Post run is possible if execute_at_xopt is activated
         '''
-        MDOScenario._run(self)
+        super()._run()
         # I think it is already in GEMSEO
         # self.execute_at_xopt()
 
@@ -215,4 +208,3 @@ class SoSMDOScenario(MDOScenario):
     #         for func in self.functions_before_run:
     #             func.evaluate(x_opt)
     #
-
