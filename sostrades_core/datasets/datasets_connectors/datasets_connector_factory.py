@@ -44,6 +44,9 @@ from sostrades_core.datasets.datasets_connectors.local_repository_datasets_conne
 from sostrades_core.datasets.datasets_connectors.sospickle_datasets_connector import (
     SoSPickleDatasetsConnector,
 )
+from sostrades_core.datasets.datasets_connectors.hdf5_datasets_connector import (
+    HDF5DatasetsConnector,
+)
 from sostrades_core.tools.metaclasses.no_instance import NoInstanceMeta
 
 
@@ -60,6 +63,7 @@ class DatasetConnectorType(Enum):
     SoSpickle = SoSPickleDatasetsConnector
     Local_repository = LocalRepositoryDatasetsConnector
     Bigquery = BigqueryDatasetsConnector
+    HDF5 = HDF5DatasetsConnector
 
     @classmethod
     def get_enum_value(cls, value_str):
