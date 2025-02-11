@@ -15,6 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 '''
 from copy import copy
+from typing import Dict, List, Union
 
 from sostrades_core.execution_engine.ns_manager import NS_SEP
 from sostrades_core.execution_engine.proxy_discipline import ProxyDiscipline
@@ -43,7 +44,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         'version': '',
     }
 
-    def __init__(self, sos_name, ee, map_name, cls_builder, associated_namespaces=None):
+    def __init__(self, sos_name: str, ee, map_name: str, cls_builder, associated_namespaces: Union[List[str], None] = None):
         '''
         Constructor
         '''
@@ -71,7 +72,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
     def gather_data_map(self):
         return self.__gather_data_map
 
-    def get_gather_variable(self):
+    def get_gather_variable(self) -> Dict:
         '''
         Variables to gather are the variable in the DESC_OUT of the instantiator which are shared
         We suppose that local variable must remain local and consequently are not gathered
@@ -86,7 +87,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
                         var_to_gather_dict[out_var] = out_dict
         return var_to_gather_dict
 
-    def build_inst_desc_in_with_map(self):
+    def build_inst_desc_in_with_map(self) -> None:
         '''
         Consult the associated scatter build map and complete the inst_desc_in
         '''
@@ -101,7 +102,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
             ProxyDiscipline.STRUCTURING: True}}
         self.inst_desc_in.update(scatter_desc_in)
 
-    def build_dynamic_inst_desc_in_gather_variables(self):
+    def build_dynamic_inst_desc_in_gather_variables(self) -> None:
         '''
         Complete inst_desc_in with scatter outputs to gather
         '''
@@ -128,7 +129,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
                     self.add_new_variables_in_inst_desc_in(
                         new_variables, gather_ns_in)
 
-    def add_new_variables_in_inst_desc_in(self, new_variables, gather_ns_in):
+    def add_new_variables_in_inst_desc_in(self, new_variables: Dict, gather_ns_in: str) -> None:
         '''
         Add a variable in the inst_desc_in with its full name and the gather_ns_in defined in the map
         '''
@@ -143,7 +144,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
                                                 ProxyDiscipline.NAMESPACE: gather_ns_in}}
                 self.inst_desc_in.update(var_name_dict)
 
-    def build_inst_desc_out(self):
+    def build_inst_desc_out(self) -> None:
         '''
         Build the inst_desc_out of the gather with the inst_desc_out of the instantiator of the scatter
         for now each variable is gathered automatically in a varname : f'{var_name}_dict'
@@ -170,7 +171,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
                                       ProxyDiscipline.USER_LEVEL: 3}}
                 self.inst_desc_out.update(var_name_dict)
 
-    def configure(self):
+    def configure(self) -> None:
         '''
         Configure the gather :
         - build the inst_desc_in with gather variables (only shared variables) with the value of the scatter var_name
@@ -203,7 +204,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
                 # if the configuration loop is redesigned.
                 ProxyDiscipline.configure(self)
 
-    def check_builders_to_gather_are_configured(self):
+    def check_builders_to_gather_are_configured(self) -> bool:
         '''
         Check if all builders with outputs data to gather are configured
         Return False at least one builder need to be configured
@@ -214,13 +215,13 @@ class ProxyDisciplineGather(ProxyDiscipline):
                 return False
         return True
 
-    def is_configured(self):
+    def is_configured(self) -> bool:
         '''
         Return False at least one builder with outputs data to gather need to be configured or structuring variables have changed, True if not
         '''
         return ProxyDiscipline.is_configured(self) and self.check_builders_to_gather_are_configured()
 
-    def update_inputs_user_level(self):
+    def update_inputs_user_level(self) -> None:
         '''
         Set user level of inputs to Expert
         '''
@@ -228,7 +229,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
             if key != self.sc_map.get_input_name():
                 value[ProxyDiscipline.USER_LEVEL] = 3
 
-    def update_data_io_with_modified_inst_desc_io(self):
+    def update_data_io_with_modified_inst_desc_io(self) -> None:
         '''
         Update data_in and data_out with inst_desc_in and inst_desc_out which have been modified during a configure
         '''
@@ -263,7 +264,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
             self._update_data_io(zip(outputs_var_ns_tuples, completed_modified_outputs.values()), self.IO_TYPE_OUT)
             self.build_simple_data_io(self.IO_TYPE_OUT)
 
-    def clean_inst_desc_in_with_sub_names(self, sub_names):
+    def clean_inst_desc_in_with_sub_names(self, sub_names: List[str]) -> None:
         '''
         Clean the inst_desc_in with names that doesn't exist in the scatter anymore,
         Update the gather function of scatter variables
@@ -280,13 +281,13 @@ class ProxyDisciplineGather(ProxyDiscipline):
 
         self.clean_variables(keys_to_delete, self.IO_TYPE_IN)
 
-    def get_maturity(self):
+    def get_maturity(self) -> str:
         '''FIX: solve conflicts between commits
             709b4be "Modify the exec_engine for evaluator processes" VJ
         and fb91c7d "maturity fixing (WIP)" CG '''
         return ''
 
-    def setup_sos_disciplines(self):
+    def setup_sos_disciplines(self) -> None:
         """
         Method to be overloaded to add dynamic inputs/outputs using add_inputs/add_outputs methods.
         If the value of an input X determines dynamic inputs/outputs generation, then the input X is structuring and the item 'structuring':True is needed in the DESC_IN
@@ -294,7 +295,7 @@ class ProxyDisciplineGather(ProxyDiscipline):
         """
         pass
 
-    def set_wrapper_attributes(self, wrapper):
+    def set_wrapper_attributes(self, wrapper) -> None:
         """ set the attribute attributes of wrapper
         """
         super().set_wrapper_attributes(wrapper)
