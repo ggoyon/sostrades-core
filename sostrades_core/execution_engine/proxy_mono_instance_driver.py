@@ -55,15 +55,29 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
 
     DESC_OUT = {'samples_inputs_df': {ProxyDriverEvaluator.TYPE: 'dataframe', 'unit': None}}
 
-    def __init__(self, sos_name, ee, cls_builder,
+    def __init__(self, sos_name: str, ee, cls_builder,
                  driver_wrapper_cls=None,
                  associated_namespaces=None,
                  map_name=None
                  ):
+        """
+        Initialize the ProxyMonoInstanceDriver.
+
+        Args:
+            sos_name (str): Name of the discipline.
+            ee: Execution engine.
+            cls_builder: Class builder.
+            driver_wrapper_cls: Driver wrapper class.
+            associated_namespaces: Associated namespaces.
+            map_name: Map name.
+        """
         super().__init__(sos_name, ee, cls_builder, driver_wrapper_cls, associated_namespaces=associated_namespaces, map_name=map_name)
         self.driver_eval_mode = self.DRIVER_EVAL_MODE_MONO
 
     def setup_sos_disciplines(self):
+        """
+        Set up the SoS disciplines.
+        """
         disc_in = self.get_data_in()
         dynamic_outputs = {}
         if disc_in and self.GATHER_OUTPUTS in disc_in:
@@ -82,6 +96,9 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                 self.add_outputs(dynamic_outputs)
 
     def configure_driver(self):
+        """
+        Configure the driver.
+        """
         if len(self.proxy_disciplines) > 0:
             # CHECK USECASE IMPORT AND IMPORT IT IF NEEDED
             # Manage usecase import
@@ -92,6 +109,12 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             self.set_eval_possible_values()
 
     def set_wrapper_attributes(self, wrapper):
+        """
+        Set the attributes of the wrapper.
+
+        Args:
+            wrapper: Wrapper object.
+        """
         super().set_wrapper_attributes(wrapper)
         if self.selected_inputs is not None:
             # specific to mono-instance
@@ -106,9 +129,12 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
             wrapper.attributes.update(eval_attributes)
 
     def prepare_build(self):
-        '''
-        Get the builder of the single subprocesses in mono-instance builder mode.
-        '''
+        """
+        Prepare the build of the single subprocesses in mono-instance builder mode.
+
+        Returns:
+            list: List of sub builders.
+        """
         if self.get_data_in() and self.eval_process_builder is None:
             self._set_eval_process_builder()
         sub_builders = [self.eval_process_builder] if self.eval_process_builder else []
@@ -116,16 +142,28 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         sub_builders.extend(super().prepare_build())
         return sub_builders
 
-    def update_reference(self):
+    def update_reference(self) -> bool:
+        """
+        Update the reference.
+
+        Returns:
+            bool: True if data_in is available, False otherwise.
+        """
         return bool(self.get_data_in())
 
-    def is_configured(self):
+    def is_configured(self) -> bool:
+        """
+        Check if the driver is configured.
+
+        Returns:
+            bool: True if configured, False otherwise.
+        """
         return super().is_configured() and self.sub_proc_import_usecase_status == 'No_SP_UC_Import'
 
     def _set_eval_process_builder(self):
-        '''
+        """
         Create the eval process builder, in a coupling if necessary, which will allow mono-instance builds.
-        '''
+        """
         updated_ns_list = self.update_sub_builders_namespaces()
         if len(self.cls_builder) == 0:  # added condition for proc build
             disc_builder = None
@@ -146,11 +184,13 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         self.eval_process_builder.add_namespace_list_in_associated_namespaces(
             updated_ns_list)
 
-    def update_sub_builders_namespaces(self):
-        '''
-        Update sub builders namespaces with the driver name in monoinstance case
-        '''
+    def update_sub_builders_namespaces(self) -> list:
+        """
+        Update sub builders namespaces with the driver name in monoinstance case.
 
+        Returns:
+            list: List of updated namespace IDs.
+        """
         ns_ids_list = []
         extra_name = f'{self.sos_name}'
         after_name = self.father_executor.get_disc_full_name()
@@ -167,20 +207,23 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
         return ns_ids_list
 
     def hide_coupling_in_driver_for_display(self, disc_builder):
-        '''
+        """
         Set the display_value of the sub coupling to the display_value of the driver
-        (if no display_value filled the display_value is the simulation value)
-        '''
+        (if no display_value filled the display_value is the simulation value).
+
+        Args:
+            disc_builder: Discipline builder.
+        """
         driver_display_value = self.ee.ns_manager.get_local_namespace(
             self).get_display_value()
         self.ee.ns_manager.add_display_ns_to_builder(
             disc_builder, driver_display_value)
 
     def check_data_integrity(self):
-        '''
-        Check the data integrity of the driver (from super) and there should be at least one trades variables
-        and at least one gather output should be selected
-        '''
+        """
+        Check the data integrity of the driver (from super) and ensure there is at least one trade variable
+        and at least one gather output selected.
+        """
         super().check_data_integrity()
         disc_in = self.get_data_in()
 
@@ -192,14 +235,14 @@ class ProxyMonoInstanceDriver(ProxyDriverEvaluator):
                 if sampling_generation_mode == ProxySampleGenerator.AT_RUN_TIME:
                     value_check = False
             if value_check:
-                # check that there is at least one trade variables
-                # (the trades variables are column with variable names in samples_df)
+                # check that there is at least one trade variable
+                # (the trade variables are columns with variable names in samples_df)
                 samples_df = self.get_sosdisc_inputs(self.SAMPLES_DF)
                 variables_column = [col for col in samples_df.columns if col not in self.SAMPLES_DF_COLUMNS_LIST]
                 if len(variables_column) == 0:
                     warning_msg = 'There should be at least one trade variable column in samples_df'
                     self.check_integrity_msg_list.append(warning_msg)
-                    # save inetrgity message on samples_df
+                    # save integrity message on samples_df
                     self.driver_data_integrity = False
                     data_integrity_msg = '\n'.join(self.check_integrity_msg_list)
                     self.dm.set_data(
